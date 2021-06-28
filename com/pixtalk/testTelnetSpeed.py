@@ -3,6 +3,8 @@
 import os
 import time
 
+'''单纯打印下载速度的小程序，玩具'''
+
 if __name__ == '__main__':
     # tftp文件夹
     tftpDir = '/tftp'
