@@ -20,6 +20,7 @@ if __name__ == '__main__':
                 yuvPaths[f] = tftpDir + '/' + f
 
 while True:
+    flag = True
     if len(sizeOld) == 0:
         for f in yuvPaths:
             sizeOld[f] = os.path.getsize(yuvPaths[f])
@@ -32,6 +33,7 @@ while True:
             speed = (sizeNew[f] - sizeOld[f]) / timeGap / 1024
             if speed != 0:
                 print(f, '的速度是:', (sizeNew[f] - sizeOld[f]) / timeGap / 1024, 'KB每秒')
+        print('---------------------------------')
         time.sleep(timeGap)
 
     else:
@@ -42,4 +44,9 @@ while True:
             speed = (sizeNew[f] - sizeOld[f]) / timeGap / 1024
             if speed != 0:
                 print(f, '的速度是:', (sizeNew[f] - sizeOld[f]) / timeGap / 1024, 'KB每秒')
-        time.sleep(timeGap)
+                flag = False
+        print('---------------------------------')
+        if flag:
+            break
+        else:
+            time.sleep(timeGap)

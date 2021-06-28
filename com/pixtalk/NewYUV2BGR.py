@@ -172,7 +172,7 @@ def Turn(subDir2, subDir1, height, width):
 if __name__ == '__main__':
     fheight = 640
     fwidth = 360
-    filePath1 = '/home/wenxingwen/Downloads/0624_RGB_noBG_common'
+    filePath1 = '/home/wenxingwen/Downloads/0625_TRUE_common/0624_TURE_dark'
     split_packed_yuv(filePath1, fheight, fwidth)
     filePath2 = filePath1 + '_NV12'
     os.rename(filePath1, filePath2)

@@ -79,22 +79,6 @@ class TelnetClient():
                 fileSize[rs.split()[8]] = rs.split()[4]
         return fileSize
 
-    # 此函数用来获取yuv文件的名称，已弃用，get_size函数更为方便
-    # def get_yuv(self):
-    #     command = 'ls|grep yuv|grep -v Fail'
-    #     # 执行命令
-    #     self.tn.write(command.encode('ascii') + b'\n')
-    #     time.sleep(0.5)
-    #     # 获取命令结果
-    #     command_result = self.tn.read_very_eager().decode('ascii')
-    #     rs1 = command_result.split('\r\n')
-    #     rs2 = []
-    #     for r in rs1:
-    #         if 'DATA' in r:
-    #             rs2.append(r)
-    #     # logging.warning('命令执行结果：\n%s' % command_result)
-    #     return rs2
-
     # 进行tftp传输
     def tftp(self, fileName, localIp):
         command = 'tftp -pl ' + fileName + ' ' + localIp
@@ -142,6 +126,7 @@ def progressBar(percent, speed, remainSize, usedTime):
         print(percent, '%', '  ', speedk, 'KB/S', '时间 ', utFormat, '/', rtFormat, end='', flush=True)
 
 
+# 统计字典中文件的总大小
 def get_all_size(Sizes):
     allSize = 0
     for f in Sizes:
@@ -168,6 +153,8 @@ if __name__ == '__main__':
     if telnet_client.login_host(host_ip, username, password):
         telnet_client.enter_U()
         fileSize = telnet_client.get_size()
+        # 获取完想要的信息就断开连接
+        telnet_client.logout_host()
         # yuv文件个数
         sum = len(fileSize)
         for f in fileSize:
@@ -176,8 +163,9 @@ if __name__ == '__main__':
         # 存储telnet连接与文件名对应关系的字典
         telnets = {}
 
+        # 应传输总大小
         sumSize = 0
-        start = time.time()
+        # start = time.time()
         for f in fileSize:
             telnet = TelnetClient()
             telnets[f] = telnet
@@ -190,7 +178,9 @@ if __name__ == '__main__':
         # 传输完毕文件个数
         finish = 0
         timeGap = 1
+        # 传输花费时间
         usetime = 0
+        # 用来做传输量对比的两个字典
         olsSize = {}
         newSize = {}
 
@@ -206,6 +196,7 @@ if __name__ == '__main__':
                 # 获取对应文件目前大小
                 size = os.path.getsize(tftpPaths[f])
 
+                # 若还没遍历完所有文件的路径一次
                 if len(olsSize) < len(fileSize):
                     olsSize[f] = 0.0
                     newSize[f] = size
@@ -213,6 +204,7 @@ if __name__ == '__main__':
                     olsSize[f] = newSize[f]
                     newSize[f] = size
 
+                # 若传输来的文件大小等于对应文件应有大小,则算传输完毕
                 if size == int(fileSize[f]):
                     finish += 1
                     print('\n', f, '已经传输完毕')
@@ -221,7 +213,7 @@ if __name__ == '__main__':
                     for _ in range(finish, sum):
                         print('    ', end='')
                     print(finish, '/', sum)
-                    end = time.time()
+                    # end = time.time()
                     # print('截止目前耗时', int(end - start), '秒')
                     # 对应文件标志设定为传输完成
                     finishs[f] = True
@@ -230,9 +222,11 @@ if __name__ == '__main__':
 
                 finishSize += size
 
+            # 比起一个时间间隔前所增加的数据量
             addSize = get_all_size(newSize) - get_all_size(olsSize)
             speed = addSize / timeGap
 
+            # 所占比例*100
             percent = (get_all_size(newSize) / sumSize) * 100
             progressBar(percent, speed, sumSize - get_all_size(newSize), usetime)
 
@@ -241,5 +235,4 @@ if __name__ == '__main__':
             else:
                 # 设定为timeGap秒检查一次
                 time.sleep(timeGap)
-        print()
-        telnet_client.logout_host()
+
